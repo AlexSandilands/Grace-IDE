@@ -6,5 +6,6 @@ A simple IDE that can edit and compile Grace code, written entirely in the Grace
 Required
 ------------
 
-Minigrace compiler
-grace-gtk binding
+Minigrace compiler.
+
+grace-gtk binding.
