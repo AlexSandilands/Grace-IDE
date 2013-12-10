@@ -42,7 +42,7 @@ method get_color (arg : String) -> String is public {
     if(arg.match("class")) then {
         return declarations_etc
     }
-    
+
 
     if(arg.match("public")) then {
         return operators_etc
@@ -69,6 +69,9 @@ method get_color (arg : String) -> String is public {
         return operators_etc
     }
     if(arg.match("while")) then {
+        return operators_etc
+    }
+    if(arg.match("for")) then {
         return operators_etc
     }
     if(arg.match("do")) then {
@@ -140,7 +143,12 @@ method get_color (arg : String) -> String is public {
     if(arg.asNumber.asString == arg) then {
         return numbers
     }
-
+    if(arg.match("true")) then {
+        return numbers
+    }
+    if(arg.match("false")) then {
+        return numbers
+    }
 
 
     if(arg.at(1).match("\"")) then {

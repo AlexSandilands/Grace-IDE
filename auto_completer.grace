@@ -1,4 +1,5 @@
 import "gtk" as gtk
+import "gdk" as gdk
 
 class Auto_Completer.new(window, notebook, editor_map) {
     // Initialise text iterators
@@ -8,19 +9,19 @@ class Auto_Completer.new(window, notebook, editor_map) {
     var indent := ""
 
     def accelgroup = gtk.accel_group
-    
+
     // Connect the key presses
-    accelgroup.accel_connect(platform.gdk.GDK_KEY_Tab, { cursor_insert("    ") })
-    accelgroup.accel_connect(platform.gdk.GDK_KEY_Return, { do_enter() })
-    accelgroup.accel_connect(platform.gdk.GDK_KEY_braceleft, { 
+    accelgroup.accel_connect(gdk.GDK_KEY_Tab, { cursor_insert("    ") })
+    accelgroup.accel_connect(gdk.GDK_KEY_Return, { do_enter() })
+    accelgroup.accel_connect(gdk.GDK_KEY_braceleft, {
         cursor_insert("\{\}")
         move_cursor_to(get_cursor - 1)
     })
-    accelgroup.accel_connect(platform.gdk.GDK_KEY_parenleft, { 
+    accelgroup.accel_connect(gdk.GDK_KEY_parenleft, {
         cursor_insert("\(\)")
         move_cursor_to(get_cursor - 1)
     })
-    accelgroup.accel_connect(platform.gdk.GDK_KEY_quotedbl, { 
+    accelgroup.accel_connect(gdk.GDK_KEY_quotedbl, {
         cursor_insert("\"\"")
         move_cursor_to(get_cursor - 1)
     })
@@ -39,7 +40,7 @@ class Auto_Completer.new(window, notebook, editor_map) {
         def cur_page = editor_map.get(notebook.current_page)
 
         cur_page.buffer.get_iter_at_offset(sIter, offset)
-        cur_page.buffer.insert(sIter, text, text.size)   
+        cur_page.buffer.insert(sIter, text, text.size)
     }
 
     // Returns the offset of the cursor in the current page
@@ -47,7 +48,7 @@ class Auto_Completer.new(window, notebook, editor_map) {
         def cur_page = editor_map.get(notebook.current_page)
 
         // Get the text mark from the buffer where the cursor is currently pointing
-        def mark = cur_page.buffer.insert
+        def mark = cur_page.buffer.get_mark("insert")
 
         // Set an iter to the position of the mark
         cur_page.buffer.get_iter_at_mark(sIter, mark)
@@ -59,7 +60,7 @@ class Auto_Completer.new(window, notebook, editor_map) {
     // Moves the cursor to the offset given
     method move_cursor_to(pos : Number) {
         def cur_page = editor_map.get(notebook.current_page)
-        
+
         cur_page.buffer.get_iter_at_offset(sIter, pos)
         cur_page.buffer.place_cursor(sIter)
     }
@@ -72,7 +73,7 @@ class Auto_Completer.new(window, notebook, editor_map) {
     // Method that deals with what happens when the enter key is pressed
     method do_enter {
         def cur_page = editor_map.get(notebook.current_page)
-        
+
         // Set one at the beggining and one at the end of the text
         cur_page.buffer.get_iter_at_offset(sIter, 0)
         cur_page.buffer.get_iter_at_offset(eIter, -1)

@@ -2,7 +2,6 @@ import "io" as io
 import "mgcollections" as collections
 
 class Scanner.new(text : String) {
-
 // Public Methods
 // -------------------
 

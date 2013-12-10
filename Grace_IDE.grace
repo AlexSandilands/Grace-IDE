@@ -70,7 +70,7 @@ scrolled_map.put(0, scrolled_main)
 
 // Class that manages the syntax highlighting (This needs to be passed around otherwise
 // the text_tag table gets confused, ie there can only be one)
-def lighter = highlighter.Syntax_Highlighter.new(notebook, editor_map, window)
+def lighter = highlighter.Syntax_Highlighter.new(notebook, editor_map)
 tEdit.buffer.on "changed" do {
     lighter.highlightLine
 }
@@ -96,7 +96,12 @@ method deleteCompileFiles(page_num : Number) {
 
 
 
+var currentConsole := "output"      // Which console is being shown
+var out := false
 
+
+var outText := ""
+var errorText := ""
 
 
 
@@ -115,7 +120,7 @@ runButton.on "clicked" do {
     // Initialise text iterators
     def sIter = gtk.text_iter
     def eIter = gtk.text_iter
-    
+
     // Set one at the beggining and one at the end of the text
     cur_page.buffer.get_iter_at_offset(sIter, 0)
     cur_page.buffer.get_iter_at_offset(eIter, -1)
@@ -147,8 +152,8 @@ runButton.on "clicked" do {
     // Change the console to errors if there were errors
     if((errorText.size > 0) && (currentConsole != "errors")) then {
         switch_to_errors()
-        switched := true    
-    } 
+        switched := true
+    }
 
     // Remember to populate the console if it wasn't switched
     if(!switched) then {
@@ -179,7 +184,7 @@ popButton.on "clicked" do {
 // Gives a dialog to let the user create a new file to edit
 newButton.on "clicked" do {
     def new_window_class = dialog_factory.new.new(notebook, editor_map, scrolled_map, lighter)
-    
+
     def new_window = new_window_class.window()
     new_window.show_all
 }
@@ -208,7 +213,7 @@ saveButton.on "clicked" do {
         // Initialise text iterators
         def sIter = gtk.text_iter
         def eIter = gtk.text_iter
-        
+
         // Set one at the beggining and one at the end of the text
         cur_page.buffer.get_iter_at_offset(sIter, 0)
         cur_page.buffer.get_iter_at_offset(eIter, -1)
@@ -234,7 +239,7 @@ saveAsButton.on "clicked" do {
 
 // This will close a tab on the notebook
 // It also "removes" the page from the map,
-// by creating a new temporary map and putting all but 
+// by creating a new temporary map and putting all but
 // the removed page in.
 closeButton.on "clicked" do {
     def page_num = notebook.current_page
@@ -242,7 +247,7 @@ closeButton.on "clicked" do {
 
     if(num_pages > 1) then {
         deleteCompileFiles(page_num)
-        
+
         def e_map = collections.map.new
         def s_map = collections.map.new
 
@@ -265,7 +270,7 @@ closeButton.on "clicked" do {
             e_map.put((x - 1), eValue)
             s_map.put((x - 1), sValue)
 
-            x := x + 1   
+            x := x + 1
         }
 
         editor_map := e_map
@@ -292,11 +297,6 @@ var errorConsole := gtk.text_view
 var errorScroll := gtk.scrolled_window
 var errorTag := errorConsole.buffer.create_tag("fixed", "foreground", "red")
 
-var outText := ""
-var errorText := ""
-
-var currentConsole := "output"      // Which console is being shown
-var out := false
 
 // Creates a new output console
 method createOut {
@@ -344,7 +344,7 @@ method switch_to_output {
         createOut()
 
         consoleBox.add(outScroll)
-        
+
         populateConsoles()
         if(out) then {
             popped.show_all
@@ -383,7 +383,7 @@ method populateConsoles {
     if((errorText.size > 0) && (currentConsole == "errors")) then {
         def sIter = gtk.text_iter
         def eIter = gtk.text_iter
-        
+
         errorConsole.buffer.set_text(errorText, -1)
         errorConsole.buffer.get_iter_at_offset(sIter, 0)
         errorConsole.buffer.get_iter_at_offset(eIter, -1)
@@ -401,6 +401,33 @@ method clearConsoles {
         errorText := ""
     }
 }
+
+
+// Identical as the popIn method, but can be connected to the window's destroy button
+def popInBlock = {
+    consoleBox.reparent(splitPane)
+    popButton.label := "Pop Out"
+
+    if(currentConsole == "output") then {
+        outConsole.set_size_request(700, 200)
+        outScroll.set_size_request(700, 200)
+    }
+    if(currentConsole == "errors") then {
+     errorConsole.set_size_request(700, 200)
+     errorScroll.set_size_request(700, 200)
+    }
+
+    def cur_page_num = notebook.current_page
+    def cur_scrolled = scrolled_map.get(cur_page_num)
+    def cur_page = editor_map.get(cur_page_num)
+
+    cur_page.set_size_request(700, 400)
+    cur_scrolled.set_size_request(700, 400)
+
+    out := false
+    popped.visible := false
+}
+
 
 // This pops the console out into a separate window
 method popOut {
@@ -444,31 +471,6 @@ method popIn {
     if(currentConsole == "errors") then {
         errorConsole.set_size_request(700, 200)
         errorScroll.set_size_request(700, 200)
-    }
-
-    def cur_page_num = notebook.current_page
-    def cur_scrolled = scrolled_map.get(cur_page_num)
-    def cur_page = editor_map.get(cur_page_num)
-
-    cur_page.set_size_request(700, 400)
-    cur_scrolled.set_size_request(700, 400)
-
-    out := false
-    popped.visible := false
-}
-
-// Identical as the popIn method, but can be connected to the window's destroy button
-def popInBlock = {
-    consoleBox.reparent(splitPane)
-    popButton.label := "Pop Out"
-
-    if(currentConsole == "output") then {
-        outConsole.set_size_request(700, 200)
-        outScroll.set_size_request(700, 200)
-    }
-    if(currentConsole == "errors") then {
-     errorConsole.set_size_request(700, 200)
-     errorScroll.set_size_request(700, 200)
     }
 
     def cur_page_num = notebook.current_page

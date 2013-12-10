@@ -9,7 +9,7 @@ class Syntax_Highlighter.new(notebook, editor_map) {
     // Initialise text iterators
     def sIter = gtk.text_iter
     def eIter = gtk.text_iter
-    
+
     // Does a scan through the entire text of the current page and
     // updates the highlighting. This can be slow if the page has > 30 lines
     method highlightAll is public {
@@ -28,7 +28,7 @@ class Syntax_Highlighter.new(notebook, editor_map) {
     // Highlights just the line that the cursor is on (more efficient)
     method highlightLine is public {
         def cur_page = editor_map.get(notebook.current_page)
-        
+
         // Set one at the beggining and one at the end of the text
         cur_page.buffer.get_iter_at_offset(sIter, 0)
         cur_page.buffer.get_iter_at_offset(eIter, -1)
@@ -37,7 +37,7 @@ class Syntax_Highlighter.new(notebook, editor_map) {
         text := cur_page.buffer.get_text(sIter, eIter, true)
 
         // Get the text mark from the buffer where the cursor is currently pointing
-        def mark = cur_page.buffer.insert
+        def mark = cur_page.buffer.get_mark("insert")
 
         // Set an iter to the position of the mark
         cur_page.buffer.get_iter_at_mark(sIter, mark)
@@ -87,7 +87,7 @@ class Syntax_Highlighter.new(notebook, editor_map) {
 
         def line = cur_page.buffer.get_text(sIter, eIter, true)
 
-        highlightText(line, start_line)        
+        highlightText(line, start_line)
     }
 
     // Scans through the input text, highlighting keywords
@@ -100,7 +100,7 @@ class Syntax_Highlighter.new(notebook, editor_map) {
         while {scan.hasNext} do {
             var token := scan.next
             var did_special_case := false
-            
+
             // If the token starts with a "//" then scan to the end of the line
             // and highlight the whole line as a comment.
             if(token.substringFrom(0)to(1).match("//")) then {
@@ -119,21 +119,21 @@ class Syntax_Highlighter.new(notebook, editor_map) {
 
                 cur_page.buffer.apply_tag(tag, sIter, eIter)
 
-                did_special_case := true    
+                did_special_case := true
             }
 
             // If the token starts with a " then scan until you find the next quotation mark
-            // and highlight everything in between 
+            // and highlight everything in between
             if(token.at(1).match("\"")) then {
                 var last_pointer := scan.get_end_of_last
 
                 var start_quotes := last_pointer - token.size
                 var end_quotes := scan.find_next_quotation(start_quotes + 1)
-                
-                var col := colors.get_color(token)                
+
+                var col := colors.get_color(token)
                 var tag := cur_page.buffer.create_tag("tag" ++ tag_count, "foreground", col)
                 tag_count := tag_count + 1
-            
+
                 cur_page.buffer.get_iter_at_offset(sIter, start_quotes + offset)
                 cur_page.buffer.get_iter_at_offset(eIter, end_quotes + offset)
 
@@ -146,7 +146,7 @@ class Syntax_Highlighter.new(notebook, editor_map) {
             // if it needs it
             if(!did_special_case) then {
                 var col := colors.get_color(token)
-            
+
                 var tag := cur_page.buffer.create_tag("tag" ++ tag_count, "foreground", col)
                 tag_count := tag_count + 1
 

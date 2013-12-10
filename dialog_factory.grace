@@ -7,6 +7,7 @@ class new.new(notebook, editor_map, scrolled_map, lighter) {
     def new_window = gtk.window(gtk.GTK_WINDOW_TOPLEVEL)
     def main_box = gtk.box(gtk.GTK_ORIENTATION_VERTICAL, 2)
     def south_box = gtk.box(gtk.GTK_ORIENTATION_HORIZONTAL, 2)
+
     def enter_label = gtk.label("Enter the name of the file")
     def accept_button = gtk.button
     def new_entry = gtk.entry
@@ -203,10 +204,10 @@ class open.new(notebook, editor_map, scrolled_map, lighter) {
         editor_map.put(num_pages - 1, new_tEdit)
         scrolled_map.put(num_pages - 1, new_scrolled)
 
-        lighter.highlightAll
         notebook.show_all
 
         open_window.destroy
+        lighter.highlightAll
     }
 
     method window is public {
